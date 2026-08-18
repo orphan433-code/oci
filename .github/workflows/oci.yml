@@ -2,7 +2,7 @@ name: OCI ARM Instance Grabber
 
 on:
   schedule:
-    - cron: '*/5 * * * *'
+    - cron: '0 * * * *'
   workflow_dispatch:
 
 jobs:
@@ -47,5 +47,14 @@ jobs:
           TOO_MANY_REQUESTS_TIME_WAIT=600
           EOF
 
-      - name: Run script
-        run: php index.php
+      - name: Run script in loop
+        run: |
+          END=$((SECONDS + 55*60))
+          ATTEMPT=0
+          while [ $SECONDS -lt $END ]; do
+            ATTEMPT=$((ATTEMPT+1))
+            echo "=== Attempt #$ATTEMPT at $(date '+%H:%M:%S') ==="
+            php index.php
+            echo "Sleeping 2 minutes..."
+            sleep 120
+          done
