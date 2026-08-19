@@ -54,7 +54,13 @@ jobs:
           while [ $SECONDS -lt $END ]; do
             ATTEMPT=$((ATTEMPT+1))
             echo "=== Attempt #$ATTEMPT at $(date '+%H:%M:%S') ==="
-            php index.php
-            echo "Sleeping 2 minutes..."
-            sleep 120
+            OUTPUT=$(php index.php 2>&1)
+            echo "$OUTPUT"
+            if echo "$OUTPUT" | grep -q "TooManyRequests"; then
+              echo "Rate limited — sleeping 10 minutes..."
+              sleep 600
+            else
+              echo "Sleeping 5 minutes..."
+              sleep 300
+            fi
           done
