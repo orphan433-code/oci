@@ -37,12 +37,14 @@ jobs:
           OCI_PRIVATE_KEY_FILENAME=/home/runner/.oci/oci_api_key.pem
           OCI_SUBNET_ID=${{ secrets.OCI_SUBNET_ID }}
           OCI_IMAGE_ID=${{ secrets.OCI_IMAGE_ID }}
-          OCI_OCPUS=${{ secrets.OCI_OCPUS }}
-          OCI_MEMORY_IN_GBS=${{ secrets.OCI_MEMORY_IN_GBS }}
+          OCI_OCPUS=2
+          OCI_MEMORY_IN_GBS=12
           OCI_SHAPE=VM.Standard.A1.Flex
           OCI_MAX_INSTANCES=1
           OCI_SSH_PUBLIC_KEY="${{ secrets.OCI_SSH_PUBLIC_KEY }}"
-          OCI_AVAILABILITY_DOMAIN=
+          OCI_AVAILABILITY_DOMAIN=lHXRC:EU-FRANKFURT-1-AD-3
+          OCI_BOOT_VOLUME_ID=ocid1.bootvolume.oc1.eu-frankfurt-1.abtheljrlkufl4nm3rulia57us67ntufst3tlmpagk3mzhm7bac27gl2g62q
+          OCI_BOOT_VOLUME_SIZE_IN_GBS=
           CACHE_AVAILABILITY_DOMAINS=1
           TOO_MANY_REQUESTS_TIME_WAIT=600
           EOF
