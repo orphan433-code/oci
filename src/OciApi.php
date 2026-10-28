@@ -54,20 +54,26 @@ class OciApi
         }
 
         $displayName = 'instance-' . date('Ymd-Hi');
+        $sshKeyJson = json_encode($sshKey);
+        $shapeJson = json_encode($shape);
+        $tenancyJson = json_encode($config->tenancyId);
+        $displayNameJson = json_encode($displayName);
+        $availabilityDomainJson = json_encode($availabilityDomain);
+        $subnetJson = json_encode($config->subnetId);
 
         $body = <<<EOD
 {
     "metadata": {
-        "ssh_authorized_keys": "$sshKey"
+        "ssh_authorized_keys": $sshKeyJson
     },
-    "shape": "$shape",
-    "compartmentId": "{$config->tenancyId}",
-    "displayName": "$displayName",
-    "availabilityDomain": "$availabilityDomain",
+    "shape": $shapeJson,
+    "compartmentId": $tenancyJson,
+    "displayName": $displayNameJson,
+    "availabilityDomain": $availabilityDomainJson,
     "sourceDetails": {$config->getSourceDetails()},
     "createVnicDetails": {
         "assignPublicIp": false,
-        "subnetId": "{$config->subnetId}",
+        "subnetId": $subnetJson,
         "assignPrivateDnsRecord": true
     },
     "agentConfig": {

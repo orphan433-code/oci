@@ -79,18 +79,34 @@ if ($existingInstances) {
     return;
 }
 
+$listedDomains = $api->getAvailabilityDomains($config);
+$listedNames = array_map(static function ($ad) {
+    return is_array($ad) ? (string) ($ad['name'] ?? '') : (string) $ad;
+}, $listedDomains);
+echo 'Listed ADs: ' . implode(', ', $listedNames) . "\n";
+echo "Launch params: ocpus={$config->ocpus} memoryInGBs={$config->memoryInGBs} bootVolumeId=" . ($bootVolumeId ?: '-') . "\n";
+
 if (!empty($config->availabilityDomains)) {
     if (is_array($config->availabilityDomains)) {
         $availabilityDomains = $config->availabilityDomains;
     } else {
-        $availabilityDomains = [ $config->availabilityDomains ];
+        $wanted = (string) $config->availabilityDomains;
+        $availabilityDomains = array_values(array_filter($listedNames, static function ($name) use ($wanted) {
+            return $name === $wanted || str_ends_with($name, $wanted);
+        }));
+        if (!$availabilityDomains) {
+            echo "No AD matching [$wanted], using as-is\n";
+            $availabilityDomains = [$wanted];
+        }
+        $config->availabilityDomains = $availabilityDomains[0];
     }
 } else {
-    $availabilityDomains = $api->getAvailabilityDomains($config);
+    $availabilityDomains = $listedDomains;
 }
 
 foreach ($availabilityDomains as $availabilityDomainEntity) {
     $availabilityDomain = is_array($availabilityDomainEntity) ? $availabilityDomainEntity['name'] : $availabilityDomainEntity;
+    echo "sourceDetails=" . $config->getSourceDetails() . " AD=$availabilityDomain\n";
     try {
         $instanceDetails = $api->createInstance($config, $shape, getenv('OCI_SSH_PUBLIC_KEY'), $availabilityDomain);
     } catch(ApiCallException $e) {
