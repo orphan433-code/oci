@@ -2,8 +2,17 @@ name: OCI ARM Instance Grabber
 
 on:
   schedule:
-    - cron: '0 * * * *'
+    # Минута не :00: в начале часа GitHub часто выкидывает отложенные schedule-запуски.
+    - cron: '17 * * * *'
   workflow_dispatch:
+
+permissions:
+  actions: write
+  contents: read
+
+concurrency:
+  group: oci-arm-grabber
+  cancel-in-progress: false
 
 jobs:
   run:
@@ -50,19 +59,39 @@ jobs:
           EOF
 
       - name: Run script in loop
+        id: grab
         run: |
           END=$((SECONDS + 55*60))
           ATTEMPT=0
           while [ $SECONDS -lt $END ]; do
             ATTEMPT=$((ATTEMPT+1))
             echo "=== Attempt #$ATTEMPT at $(date '+%H:%M:%S') ==="
-            OUTPUT=$(php index.php 2>&1)
+            OUTPUT=$(php index.php 2>&1) || true
             echo "$OUTPUT"
+            if echo "$OUTPUT" | grep -q "Already have an instance"; then
+              echo "Instance already exists — stopping the chain."
+              echo "continue=false" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+            if echo "$OUTPUT" | grep -q "ocid1.instance"; then
+              echo "Instance created — stopping the chain."
+              echo "continue=false" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
             if echo "$OUTPUT" | grep -q "TooManyRequests"; then
               echo "Rate limited — sleeping 10 minutes..."
               sleep 600
             else
-              echo "Sleeping 5 minutes..."
-              sleep 300
+              echo "Sleeping 1 minute..."
+              sleep 60
             fi
           done
+          echo "continue=true" >> "$GITHUB_OUTPUT"
+
+      - name: Queue next run
+        if: ${{ !cancelled() && steps.grab.outputs.continue == 'true' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh workflow run oci.yml --ref "${{ github.ref_name }}"
+          echo "Next run queued."
