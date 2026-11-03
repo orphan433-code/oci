@@ -46,8 +46,8 @@ jobs:
           OCI_PRIVATE_KEY_FILENAME=/home/runner/.oci/oci_api_key.pem
           OCI_SUBNET_ID=${{ secrets.OCI_SUBNET_ID }}
           OCI_IMAGE_ID=${{ secrets.OCI_IMAGE_ID }}
-          OCI_OCPUS=2
-          OCI_MEMORY_IN_GBS=12
+          OCI_OCPUS=1
+          OCI_MEMORY_IN_GBS=6
           OCI_SHAPE=VM.Standard.A1.Flex
           OCI_MAX_INSTANCES=1
           OCI_SSH_PUBLIC_KEY="${{ secrets.OCI_SSH_PUBLIC_KEY }}"
