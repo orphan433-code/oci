@@ -23,7 +23,7 @@ jobs:
       - name: Install PHP and composer
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y php8.3 php8.3-cli php8.3-curl php8.3-mbstring
+          sudo apt-get install -y php-cli php-curl php-mbstring
           curl -sS https://getcomposer.org/installer | php
           sudo mv composer.phar /usr/local/bin/composer
 
